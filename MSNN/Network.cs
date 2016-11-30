@@ -54,9 +54,9 @@ namespace MSNN
 			SynapseMaxDelay = synapseMaxDelay;
 		}
 
-		public void SetDopaminModule(float decayFactor, IDopaminInjector dopaminInjector)
+		public void SetDopamineModule(float decayFactor, IDopamineInjector dopamineInjector)
 		{
-			Dopamin.SetParameters(decayFactor, dopaminInjector);
+			Dopamine.SetParameters(decayFactor, dopamineInjector);
 		}
 
 		public int AddMonitor(IMonitor monitor)
@@ -109,7 +109,7 @@ namespace MSNN
 				for (int lay = 0; lay < layers.Count; lay++)
 					layers[lay].Update();
 
-				Dopamin.Update();
+				Dopamine.Update();
 
 				foreach (IMonitor m in monitors)
 					m.Update();

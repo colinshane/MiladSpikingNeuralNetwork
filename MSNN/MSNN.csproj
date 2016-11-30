@@ -59,12 +59,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Dopamin.cs" />
-    <Compile Include="DopaminInjectors\ConstantDopaminInjector.cs" />
+    <Compile Include="Dopamine.cs" />
+    <Compile Include="DopamineInjectors\ConstantDopamineInjector.cs" />
     <Compile Include="Group.cs" />
     <Compile Include="GroupLearningStrategies\LearningAllGroupStrategy.cs" />
     <Compile Include="GroupLearningStrategies\LearningOffGroupStrategy.cs" />
-    <Compile Include="IDopaminInjector.cs" />
+    <Compile Include="IDopamineInjector.cs" />
     <Compile Include="IGroupLearningStrategy.cs" />
     <Compile Include="ILearningRule.cs" />
     <Compile Include="Layer.cs" />

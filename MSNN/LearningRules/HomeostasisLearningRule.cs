@@ -35,9 +35,9 @@ namespace MSNN.LearningRules
 		public HomeostasisLearningRule(float stdpAmpPositive, float stdpAmpNegative,
 			int stdpTaoPositive, int stdpTaoNegative,
 			float homeostasisAlpha, int homeostasisTargetRate, int homeostasisAveragingWindow,
-			int neighborSpikeCount = 0, float dopaminConstant = -1)
+			int neighborSpikeCount = 0, float dopamineConstant = -1)
 			:this(new STDPLearningRule(stdpAmpPositive, stdpAmpNegative, stdpTaoPositive, stdpTaoNegative,
-				dopaminConstant), homeostasisAlpha, homeostasisTargetRate, homeostasisAveragingWindow)
+				dopamineConstant), homeostasisAlpha, homeostasisTargetRate, homeostasisAveragingWindow)
 		{}
 
 		private HomeostasisLearningRule(STDPLearningRule stdpRule, float homeostasisAlpha,

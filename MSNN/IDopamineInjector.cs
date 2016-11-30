@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MSNN
 {
-	public interface IDopaminInjector
+	public interface IDopamineInjector
 	{
 		float Inject();
 	}

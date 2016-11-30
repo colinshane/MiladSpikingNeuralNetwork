@@ -15,9 +15,9 @@ namespace MSNN.LearningRules
 		private float ampPositive, ampNegative;
 		string preNeuronStatisticsKey;
 		string postNeuronStatisticsKey;
-		float dopaminConstant;
+		float dopamineConstant;
 		bool isDopaminergic;
-		float dopaminC;
+		float dopamineC;
 
 		/// <summary>
 		/// Gets whether the rule requires pre neuron statistics or not
@@ -51,10 +51,10 @@ namespace MSNN.LearningRules
 		/// <param name="neighborSpikeCount">Number of last learning interval (pre/post) spikes to be 
 		/// stored for the new interval. 0 (default value) leads to including all of the spikes in the learning interval.</param>
 		/// <param name="synapseDelay">Delay of the synapse.</param> 
-		/// <param name="dopaminConstant">Tc in dopamin influence factor. -1 (default value) cancels the influence of 
-		/// dopamin.</param>
+		/// <param name="dopamineConstant">Tc in dopamine influence factor. -1 (default value) cancels the influence of 
+		/// dopamine.</param>
 		public STDPLearningRule(float stdpAmpPositive, float stdpAmpNegative, int stdpTaoPositive, int stdpTaoNegative,
-			float dopaminConstant = -1)
+			float dopamineConstant = -1)
 		{
 			ampPositive = stdpAmpPositive;
 			ampNegative = stdpAmpNegative;
@@ -64,9 +64,9 @@ namespace MSNN.LearningRules
 			preNeuronStatisticsKey = string.Format("STDP_{0}", taoPositive);
 			postNeuronStatisticsKey = string.Format("STDP_{0}", taoNegative);
 
-			this.dopaminConstant = dopaminConstant;
-			dopaminC = 0;
-			isDopaminergic = (dopaminConstant != -1);
+			this.dopamineConstant = dopamineConstant;
+			dopamineC = 0;
+			isDopaminergic = (dopamineConstant != -1);
 		}
 
 		public float GetWeightChange(Synapse synapse)
@@ -74,7 +74,7 @@ namespace MSNN.LearningRules
 			List<int> lastPreSpikes = (List<int>)synapse.PreNeuron.GetStatistics(preNeuronStatisticsKey).GetData()[0];
 			List<int> lastPostSpikes = (List<int>)synapse.PostNeuron.GetStatistics(postNeuronStatisticsKey).GetData()[0];
 			if(isDopaminergic)
-				return GetWeightChangeWithDopamin(synapse, lastPreSpikes, lastPostSpikes);
+				return GetWeightChangeWithDopamine(synapse, lastPreSpikes, lastPostSpikes);
 			return GetWeightChange(synapse, lastPreSpikes, lastPostSpikes);
 		}
 
@@ -137,7 +137,7 @@ namespace MSNN.LearningRules
 			return dw;
 		}
 
-		public float GetWeightChangeWithDopamin(Synapse synapse, List<int> lastPreSpikes, List<int> lastPostSpikes)
+		public float GetWeightChangeWithDopamine(Synapse synapse, List<int> lastPreSpikes, List<int> lastPostSpikes)
 		{
 			if (Network.Time == 0)
 				return 0;
@@ -153,21 +153,21 @@ namespace MSNN.LearningRules
 
 			for (; t < Network.Time; t++)
 			{
-				dopaminC -= dopaminC / dopaminConstant;
+				dopamineC -= dopamineC / dopamineConstant;
 
 				if (idxPre != preSpkTimes.Count && t == preSpkTimes[idxPre])
 				{
 					if (idxPost >= 0 && idxPost < postSpkTimes.Count && t > postSpkTimes[idxPost])
-						dopaminC += STDP(postSpkTimes[idxPost] - t);
+						dopamineC += STDP(postSpkTimes[idxPost] - t);
 					else if (idxPost - 1 >= 0 && t > postSpkTimes[idxPost - 1])
-						dopaminC += STDP(postSpkTimes[idxPost - 1] - t);
+						dopamineC += STDP(postSpkTimes[idxPost - 1] - t);
 				}
 				if (idxPost != postSpkTimes.Count && t == postSpkTimes[idxPost])
 				{
 					if (idxPre >= 0 && idxPre < preSpkTimes.Count && t >= preSpkTimes[idxPre])
-						dopaminC += STDP(t - preSpkTimes[idxPre]);
+						dopamineC += STDP(t - preSpkTimes[idxPre]);
 					else if (idxPre - 1 >= 0 && t >= preSpkTimes[idxPre - 1])
-						dopaminC += STDP(t - preSpkTimes[idxPre - 1]);
+						dopamineC += STDP(t - preSpkTimes[idxPre - 1]);
 				}
 
 				//going forward
@@ -177,7 +177,7 @@ namespace MSNN.LearningRules
 					idxPost++;
 			}
 
-			return dopaminC * Dopamin.GetDopaminLevel(t - 1);
+			return dopamineC * Dopamine.GetDopamineLevel(t - 1);
 		}
 
 		private float STDP(int postPreSpikeTimeDifference)
@@ -196,7 +196,7 @@ namespace MSNN.LearningRules
 		public ILearningRule GetCopy()
 		{
 			STDPLearningRule copy = new STDPLearningRule(this.ampPositive, this.ampNegative,
-				this.taoPositive, this.taoNegative, this.dopaminConstant);
+				this.taoPositive, this.taoNegative, this.dopamineConstant);
 			return copy;
 		}
 
