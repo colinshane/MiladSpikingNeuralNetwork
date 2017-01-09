@@ -89,11 +89,15 @@ namespace MSNN.LearningRules
 			float k = (float)homePostStat[1];
 			float dw = stdp.GetWeightChange(synapse, (List<int>)homePreStat[2], (List<int>)homePostStat[2]);
 			float hm = (alpha * synapse.Weight * div + dw) * k;
+
 			//Dynamic reduction
-			alpha *= 0.99f;
+			//alpha *= 0.99f;
+
 			//Console.WriteLine();
 			//Console.WriteLine("Alpha = " + alpha);
 			//Console.WriteLine();
+			if (Network.Time < averagingWindow)
+				return dw;
 			return hm;
 		}
 	}
