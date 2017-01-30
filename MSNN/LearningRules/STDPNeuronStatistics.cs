@@ -39,17 +39,26 @@ namespace MSNN.LearningRules
 		{
 			lastSpikesOld = lastSpikesNew;
 			lastSpikesNew = new List<int>();
-			for (int i = neuron.SpikeTimes.Count - 1; i >= 0; i--)
+			if (neuron.SpikeTimes.Count != 0)
 			{
-				int tmp = neuron.SpikeTimes[i];
-				if (tmp + Network.SynapseMaxDelay >= Network.Time - window)
-				{
-					lastSpikesNew.Add(tmp);
-					break;
-				}
-				else
-					break;
+				lastSpikesNew.Add(neuron.SpikeTimes.Last());
 			}
+			else if (lastSpikesOld.Count != 0)
+			{
+				if (lastSpikesOld.Last() + Network.SynapseMaxDelay >= Network.Time - window)
+					lastSpikesNew.Add(lastSpikesOld.Last());
+			}
+			//for (int i = neuron.SpikeTimes.Count - 1; i >= 0; i--)
+			//{
+			//	int tmp = neuron.SpikeTimes[i];
+			//	if (tmp + Network.SynapseMaxDelay >= Network.Time - window)
+			//	{
+			//		lastSpikesNew.Add(tmp);
+			//		break;
+			//	}
+			//	else
+			//		break;
+			//}
 		}
 	}
 }

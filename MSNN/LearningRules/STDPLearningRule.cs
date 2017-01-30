@@ -41,6 +41,11 @@ namespace MSNN.LearningRules
 			}
 		}
 
+		public bool IsDopaminergic
+		{
+			get { return isDopaminergic; }
+		}
+
 		/// <summary>
 		/// 
 		/// </summary>
@@ -80,58 +85,41 @@ namespace MSNN.LearningRules
 
 		public float GetWeightChange(Synapse synapse, List<int> lastPreSpikes, List<int> lastPostSpikes)
 		{
-			if (Network.Time == 0 ||
-				synapse.PreNeuron.SpikeTimes.Count == 0 ||
-				synapse.PostNeuron.SpikeTimes.Count == 0)
+			if (Network.Time == 0)
 				return 0;
 
-			//STDP based on nearest firing
 			float dw = 0;
+			//STDP based on nearest firing
 			STDPTimeContainer preSpkTimes = new STDPTimeContainer(lastPreSpikes, synapse.PreNeuron.SpikeTimes,
 				synapse.Delay);
 			STDPTimeContainer postSpkTimes = new STDPTimeContainer(lastPostSpikes, synapse.PostNeuron.SpikeTimes);
-			
-			int idxPre = lastPreSpikes.Count;
-			int idxPost = lastPostSpikes.Count;
 
-			while(idxPre < preSpkTimes.Count && idxPost < postSpkTimes.Count)
-			{
-				if(preSpkTimes[idxPre] == postSpkTimes[idxPost])
-				{
-					dw += STDP(0);
-					++idxPre;
-					++idxPost;
-				}
-				//finding the nearest post spike before
-				else if (preSpkTimes[idxPre] < postSpkTimes[idxPost])
-				{
-					if(idxPost - 1 >= 0)
-					{
-						dw += STDP(preSpkTimes[idxPre] - postSpkTimes[idxPost - 1]);
-					}
-					++idxPre;
-				}
-				//finding the nearest pre spike before
-				else
-				{
-					if(idxPre - 1 >= 0)
-					{
-						dw += STDP(postSpkTimes[idxPost] - preSpkTimes[idxPre - 1]);
-					}
-					++idxPost;
-				}
-			}
+			int t = Network.Time - Network.LearningInterval;
+			int idxPre = 0;
+			int idxPost = 0;
 
-			while(idxPre < preSpkTimes.Count)
+			for (; t < Network.Time; t++)
 			{
-				dw += STDP(preSpkTimes[idxPre] - postSpkTimes[postSpkTimes.Count - 1]);
-				++idxPre;
-			}
+				if (idxPre != preSpkTimes.Count && t == preSpkTimes[idxPre])
+				{
+					if (idxPost >= 0 && idxPost < postSpkTimes.Count && t > postSpkTimes[idxPost])
+						dw += STDP(postSpkTimes[idxPost] - t);
+					else if (idxPost - 1 >= 0 && t > postSpkTimes[idxPost - 1])
+						dw += STDP(postSpkTimes[idxPost - 1] - t);
+				}
+				if (idxPost != postSpkTimes.Count && t == postSpkTimes[idxPost])
+				{
+					if (idxPre >= 0 && idxPre < preSpkTimes.Count && t >= preSpkTimes[idxPre])
+						dw += STDP(t - preSpkTimes[idxPre]);
+					else if (idxPre - 1 >= 0 && t >= preSpkTimes[idxPre - 1])
+						dw += STDP(t - preSpkTimes[idxPre - 1]);
+				}
 
-			while (idxPost < postSpkTimes.Count)
-			{
-				dw += STDP(postSpkTimes[idxPost] - preSpkTimes[preSpkTimes.Count - 1]);
-				++idxPost;
+				//going forward
+				if (idxPre != preSpkTimes.Count && t == preSpkTimes[idxPre])
+					idxPre++;
+				if (idxPost != postSpkTimes.Count && t == postSpkTimes[idxPost])
+					idxPost++;
 			}
 			
 			return dw;
@@ -148,13 +136,11 @@ namespace MSNN.LearningRules
 			STDPTimeContainer postSpkTimes = new STDPTimeContainer(lastPostSpikes, synapse.PostNeuron.SpikeTimes);
 
 			int t = Network.Time - Network.LearningInterval;
-			int idxPre = lastPreSpikes.Count;
-			int idxPost = lastPostSpikes.Count;
+			int idxPre = 0;
+			int idxPost = 0;
 
 			for (; t < Network.Time; t++)
 			{
-				dopamineC -= dopamineC / dopamineConstant;
-
 				if (idxPre != preSpkTimes.Count && t == preSpkTimes[idxPre])
 				{
 					if (idxPost >= 0 && idxPost < postSpkTimes.Count && t > postSpkTimes[idxPost])
@@ -177,18 +163,20 @@ namespace MSNN.LearningRules
 					idxPost++;
 			}
 
-			return dopamineC * Dopamine.GetDopamineLevel(t - 1);
+			float dw = dopamineC * Dopamine.GetDopamineLevel(t - 1);
+			dopamineC -= dopamineC / dopamineConstant;
+			return dw;
 		}
 
 		private float STDP(int postPreSpikeTimeDifference)
 		{
 			if (postPreSpikeTimeDifference >= 0)
 			{
-				if (postPreSpikeTimeDifference > taoPositive)
+				if (postPreSpikeTimeDifference >= taoPositive)
 					return 0;
 				return ampPositive * (float)Math.Exp(-postPreSpikeTimeDifference / (float)taoPositive);
 			}
-			if (-1 * postPreSpikeTimeDifference > taoNegative)
+			if (-1 * postPreSpikeTimeDifference >= taoNegative)
 				return 0;
 			return ampNegative * (float)Math.Exp(postPreSpikeTimeDifference / (float)taoNegative);
 		}

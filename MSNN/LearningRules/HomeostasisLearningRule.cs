@@ -87,7 +87,11 @@ namespace MSNN.LearningRules
 
 			float div = (float)homePostStat[0];
 			float k = (float)homePostStat[1];
-			float dw = stdp.GetWeightChange(synapse, (List<int>)homePreStat[2], (List<int>)homePostStat[2]);
+			float dw = 0;
+			if(stdp.IsDopaminergic)
+				dw = stdp.GetWeightChangeWithDopamine(synapse, (List<int>)homePreStat[2], (List<int>)homePostStat[2]);
+			else
+				dw = stdp.GetWeightChange(synapse, (List<int>)homePreStat[2], (List<int>)homePostStat[2]);
 			float hm = (alpha * synapse.Weight * div + dw) * k;
 
 			//Dynamic reduction
